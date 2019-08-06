@@ -190,9 +190,9 @@
     
     (script-fu-whitebalance inImage inDrawable 1 100 130 0)
     
-    (gimp-image-undo-group-start image)
+    (gimp-image-undo-group-start inImage)
     (gimp-drawable-brightness-contrast inDrawable (/ -20 127) (/ 20 127))
-    (gimp-image-undo-group-end image)
+    (gimp-image-undo-group-end inImage)
     
     (gimp-context-set-foreground prev-fg)
     (gimp-context-set-background prev-bg)
@@ -208,6 +208,7 @@
     (script-fu-whiten-image image drawable)
     (gimp-file-save RUN-NONINTERACTIVE image drawable filename filename)
     (gimp-image-delete image)
+    (gimp-message (string-append "Whitened image " filename))
   )
 )
 
