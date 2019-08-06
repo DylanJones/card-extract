@@ -17,7 +17,7 @@ def process_img(fname, imnum=0):
     ret, thresh = cv2.threshold(img, 180, 255, cv2.THRESH_BINARY)
     kernel = np.ones((20,20), np.uint8)
     closed = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel)
-    disp_scaled("morph", closed)
+    # disp_scaled("morph", closed)
     print(cv2.findContours(closed, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE))
 
     contours, hierarchy = cv2.findContours(closed, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
