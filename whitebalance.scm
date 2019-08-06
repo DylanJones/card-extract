@@ -175,8 +175,8 @@
   )
   (let* (
       (card-color (car (gimp-image-pick-color inImage inDrawable 5 5 TRUE TRUE 5)))
-      (prev-fg (car (gimp-context-get-foreground))
-      (prev-bg (car (gimp-context-get-background))
+      (prev-fg (car (gimp-context-get-foreground)))
+      (prev-bg (car (gimp-context-get-background)))
     )
     (let* (
         (r (car card-color))
