@@ -2,6 +2,7 @@
 import os
 import numpy as np
 import cv2
+import math
 from PIL import Image
 
 def disp_scaled(name, image, delay=0):
@@ -14,12 +15,13 @@ def disp_scaled(name, image, delay=0):
 def process_img(fname, imnum=0):
     imgc = cv2.imread(fname)
     img = cv2.cvtColor(imgc, cv2.COLOR_BGR2GRAY)
-    ret, thresh = cv2.threshold(img, 180, 255, cv2.THRESH_BINARY)
+    ret, thresh = cv2.threshold(img, 100, 255, cv2.THRESH_BINARY)
     kernel = np.ones((20,20), np.uint8)
     closed = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel)
-    #disp_scaled("morph", closed)
+    disp_scaled("morph", closed)
+    print(cv2.findContours(closed, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE))
 
-    im, contours, hierarchy = cv2.findContours(closed, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+    contours, hierarchy = cv2.findContours(closed, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
 
     cutoff = 1000
     out = []
@@ -32,17 +34,31 @@ def process_img(fname, imnum=0):
 
     contours = np.asarray(out)
     print(f'Found {len(contours)} contours')
-    # cv2.drawContours(imgc, contours, -1, (148, 0, 211), 13)
-    # disp_scaled('image', imgc)
+    cv2.drawContours(imgc, contours, -1, (148, 0, 211), 13)
+    #disp_scaled('image', imgc)
 
     for contour in contours:
         contour = contour[:,0,:]
-        rect = cv2.minAreaRect(contour)
-        # cv2.circle(imgc, tuple(map(int, rect[0])), 30, (0, 0, 255), 9)
-        pts = cv2.boxPoints(rect)
-        # for pt in pts:
-        #     cv2.circle(imgc, tuple(pt), 30, (0, 0, 255), 9)
-        box = np.asarray([(0, rect[1][1]), (0, 0), (rect[1][0], 0), (rect[1][0], rect[1][1])], dtype=np.float32)
+        # get the corners of the card
+        pts =  [[contour[:,0].min(), contour[:,1].min()],
+                [contour[:,0].min(), contour[:,1].max()],
+                [contour[:,0].max(), contour[:,1].max()],
+                [contour[:,0].max(), contour[:,1].min()]]
+        pts = np.asarray(pts)
+        # draw the corners
+        for pt in pts:
+            cv2.circle(imgc, tuple(pt), 30, (0, 0, 255), 9)
+        disp_scaled('image', imgc)
+
+        # get the side lengths of the card so that we can calculate output image size
+        def idist(p1, p2):
+            return int(math.sqrt((p1[0]-p2[0])**2 + (p1[1]-p2[1])**2))
+        sidelens = [idist(pts[0], pts[1]), idist(pts[1], pts[2]),
+                    idist(pts[2], pts[3]), idist(pts[3], pts[0])]
+        sidelens.sort()
+        height, width = sidelens[3], sidelens[3] * 3 / 5
+
+        #box = np.asarray([(0, rect[1][1]), (0, 0), (rect[1][0], 0), (rect[1][0], rect[1][1])], dtype=np.float32)
         transform = cv2.findHomography(pts, box)
         print(transform[0])
         card = cv2.warpPerspective(imgc, transform[0], tuple(map(int, rect[1])), flags=cv2.INTER_LINEAR)
@@ -50,7 +66,9 @@ def process_img(fname, imnum=0):
                 2: cv2.rotate(card, cv2.ROTATE_180), 3: cv2.rotate(card, cv2.ROTATE_90_COUNTERCLOCKWISE)}
         key = 0
         rotation = 0
-        while key != 10: # enter
+        #while key != 10: # enter in opencv3
+        while key != 13: # enter in opencv4
+            print(key)
             disp_scaled(f'card {imnum}', card, 1)
             key = cv2.waitKey(0)
             rotation = (rotation + 1) % 4
@@ -65,7 +83,9 @@ OUTPUT_DIR = 'cards'
 OUTPUT_PREFIX = 'card_'
 OUTPUT_FORMAT = '.png'
 
-n = 0
-for img in sorted(os.listdir(INPUT_DIR)):
-    print(img)
-    n = process_img(os.path.join(INPUT_DIR, img), n)
+process_img('homo1.jpg')
+
+#n = 0
+#for img in sorted(os.listdir(INPUT_DIR)):
+#    print(img)
+#    n = process_img(os.path.join(INPUT_DIR, img), n)
