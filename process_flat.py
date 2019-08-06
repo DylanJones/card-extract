@@ -17,9 +17,10 @@ def process_img(fname, imnum=0):
     ret, thresh = cv2.threshold(img, 180, 255, cv2.THRESH_BINARY)
     kernel = np.ones((20,20), np.uint8)
     closed = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel)
-    #disp_scaled("morph", closed)
+    disp_scaled("morph", closed)
+    print(cv2.findContours(closed, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE))
 
-    im, contours, hierarchy = cv2.findContours(closed, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+    contours, hierarchy = cv2.findContours(closed, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
 
     cutoff = 1000
     out = []
@@ -50,7 +51,9 @@ def process_img(fname, imnum=0):
                 2: cv2.rotate(card, cv2.ROTATE_180), 3: cv2.rotate(card, cv2.ROTATE_90_COUNTERCLOCKWISE)}
         key = 0
         rotation = 0
-        while key != 10: # enter
+        #while key != 10: # enter
+        while key != 13: # enter
+            print(key)
             disp_scaled(f'card {imnum}', card, 1)
             key = cv2.waitKey(0)
             rotation = (rotation + 1) % 4
