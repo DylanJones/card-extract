@@ -90,7 +90,7 @@ def process_img(fname, imnum=0):
 
 INPUT_DIR = 'scanned'
 OUTPUT_DIR = 'cards'
-OUTPUT_PREFIX = 'card_'
+OUTPUT_PREFIX = 'club_card_'
 OUTPUT_FORMAT = '.png'
 
 n = 0
